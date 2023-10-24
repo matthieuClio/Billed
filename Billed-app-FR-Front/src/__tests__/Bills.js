@@ -11,14 +11,9 @@ import {localStorageMock} from "../__mocks__/localStorage.js"
 import router from "../app/Router.js"
 
 import Bill from "../containers/Bills.js"
-// import NewBillUi from "../views/NewBillUI.js"
 import MockedBills from "../__mocks__/store.js"
 import errorClass from '../views/ErrorPage.js'
 import { log } from "console"
-
-// ...
-// ...
-// Given When Then structur, my structure is correct ?
 
 describe("Given I am connected as an employee", () => {
   describe("When I am on Bills Page", () => {
@@ -36,6 +31,8 @@ describe("Given I am connected as an employee", () => {
       await waitFor(() => screen.getByTestId('icon-window'))
       const windowIcon = screen.getByTestId('icon-window')
       //to-do write expect expression
+
+      // Condition for pass the test
       expect(windowIcon.className).toEqual("active-icon")
     })
 
@@ -44,12 +41,21 @@ describe("Given I am connected as an employee", () => {
       const dates = screen.getAllByText(/^(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])$/i).map(a => a.innerHTML)
       const antiChrono = (a, b) => ((a < b) ? 1 : -1)
       const datesSorted = [...dates].sort(antiChrono)
+
+      // Condition for pass the test
       expect(dates).toEqual(datesSorted)
     })
 
-    // Maybe set a WHEN ?
-    test('Then icon-eye is clicked should generate modal', () => {
-       // We load dom element on body
+    test('Then icon-eye is clicked should generate data Bill in modal', () => {
+      /* 
+      ---
+      Sumary : we verify handleClickIconEye method from Bill object
+      We simulate a click on icon eye, and we verify information
+      data bill in modal.
+      ---
+      */
+
+      // We load dom element on body
       document.body.innerHTML = BillsUI({ data: bills })
 
       // We load the bill class for use methods
@@ -57,23 +63,31 @@ describe("Given I am connected as an employee", () => {
         document, onNavigate, store: null, localStorage: window.localStorage
       })
 
-      // V2 of my code
-      // .............
       $.fn.modal = jest.fn() // Fix ".modal()" issue of jquery
-      const eye = screen.getAllByTestId('icon-eye')[0] // Get first DOM elemnt icon eye
+      
+      // We will make a test on this first DOM element icon eye
+      const eye = screen.getAllByTestId('icon-eye')[0]
 
-      // Simulate click on eye icon, it call event added on eye icon
+      // Simulate click on eye icon 
+      // (it will call handleClickIconEye event associated to Bill constructor)
       userEvent.click(eye)
 
       // Get image DOM element added by the click event
       const modaleImageElt = document.querySelector('img[alt="Bill"]')
-      // log(modaleImageElt.getAttribute('src'))
 
       // Check image DOM was create
+      // Condition for pass the test
       expect(modaleImageElt).not.toEqual(null)
     })
 
-    test('Then handleClickNewBill should be call, when we click on buttonNewBill', async () => {      
+    test('Then button "btn-new-bill" is clicked, should call handleClickNewBill and change url page', async () => {      
+      /* 
+      ---
+      Sumary : we verify handleClickNewBill method from Bill object
+      We simulate a click on "btn-new-bill" button, and we verify if the page url has change.
+      ---
+      */
+      
       // We load dom element on body
       document.body.innerHTML = BillsUI({ data: bills })
 
@@ -83,7 +97,7 @@ describe("Given I am connected as an employee", () => {
       document.body.append(root)
       router()
       
-      // We create an bill object, event defined in constructor will be auto load (handleClickNewBill)
+      // We create an bill object event, defined in constructor will be auto load (handleClickNewBill)
       const bill = new Bill({
         document, onNavigate, store: null, localStorage: window.localStorage
       })
@@ -97,21 +111,29 @@ describe("Given I am connected as an employee", () => {
       // Simulate click on button, event added on button will change page
       userEvent.click(buttonNewBill)
 
-      // Check the new url after click on button
+      // New url after click on button
       url = window.location.href
+
+      // Condition for pass the test
       expect(url).toBe('http://localhost/#employee/bill/new')
     })
 
-    test('Then "getBills" method sould be call must to have a return', async () => {
+    test('Then "getBills" method is call, we sould return bills', async () => {
+      /* 
+      ---
+      Sumary : we verify getBills method from Bill object
+      We verify if the bills returned is correct.
+      ---
+      */
+
       // We load dom element on body
       document.body.innerHTML = BillsUI({ data: bills })
 
-      // We load the bill class for use methods
+      // We load the bill class for use his methods
       const bill = new Bill({
         document, onNavigate, store: MockedBills, localStorage: window.localStorage
       })
-
-      // ... V2
+      
       // Bills by method getBills
       const billsData = await bill.getBills()
       const billsDataId = []
@@ -130,110 +152,103 @@ describe("Given I am connected as an employee", () => {
         billsDataId.push(element.id)
       });
 
+      // Condition for pass the test
       expect(currentMockedBillsId).toEqual(billsDataId)
     })
   })
-
-  // ........
-  // Old code
-  // - Not working because the 'expect()' work if we delete "userEvent.click(eye)" LINE -
-  // describe("When I click on icon eye button", () => {
-  //   test('Then open modal', () => {
-  //     const onNavigate = (pathname) => {
-  //       document.body.innerHTML = ROUTES({ pathname })
-  //     }
-  //     Object.defineProperty(window, "localStorage", { value: localStorageMock })
-  //     window.localStorage.setItem('user', JSON.stringify({
-  //         type: "Employee"
-  //       })
-  //     )
-  //     document.body.innerHTML = BillsUI({ data: bills })
-  //     const bill = new Bill({
-  //       document, onNavigate, store: null, localStorage: window.localStorage
-  //     })
-
-  //     $.fn.modal = jest.fn()
-  //     const eye = screen.getAllByTestId('icon-eye')[0]
-  //     const handleClickIconEye = jest.fn(() => bill.handleClickIconEye(eye))
-  //     eye.addEventListener('click', handleClickIconEye)
-  //     userEvent.click(eye)
-  //     expect(handleClickIconEye).toHaveBeenCalled()
-
-  //     const modale = document.getElementById('modaleFile')
-  //     expect(modale).toBeTruthy()
-  //   })
-  // })
 })
 
-describe('Given an error message', () => {
-  describe('When I try to access to the server', () => {
-    test('Then we should return the "error 500" got from server', () => {
+describe('Given I am a user connected as Employe', () => {
+  describe('When an error occurs on API on Bills page', () => {
+    beforeEach(() => {
+      jest.spyOn(MockedBills, "bills")
+  
+      // Define the mock localStorage
+      Object.defineProperty(window, 'localStorage', { value: localStorageMock })
+      window.localStorage.setItem('user', JSON.stringify({
+        type: 'Employee',
+        email: 'test@test.com'
+      })) 
+    })
+  
+    test('Then fetches messages from an API and fails with 500 message error', async () => {
+      /* 
+      ---
+      Sumary : verify error 500 on an call api
+      We simulate a call api and return an error 500 in promise.
+      --- 
+      */
+
       // Define message error 500
       let error500 = new Error("Erreur 500")
 
-      // Define error DOM page
+      // Define DOM page
       const errorElt = errorClass(error500.message)
       document.body.innerHTML = errorElt
 
-      // Get the specific error from the DOM
-      let errorMessageElt = screen.getByTestId('error-message').textContent
+      // Allow to navigate
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.appendChild(root)
+      router()
 
-      // Define or get url
-      const customUrl = window.location.href
+      // Make a get on api data list
+      MockedBills.bills.mockImplementationOnce(() => {
+        return {
+          list : () =>  {
+            return Promise.reject(new Error("Erreur 500"))
+          }
+        }
+      })
       
-      // Get status page
-      const statusPage = (customUrl) => {
-        let http = new XMLHttpRequest()
-        http.open('HEAD', customUrl, false)
-        http.send()
-        // Mock http request
-        httpMocked = Object.assign(jest.fn(), http)
-        httpMocked.status = 500
+      window.onNavigate(ROUTES_PATH.Bills)
+      await new Promise(process.nextTick)
 
-        return httpMocked.status
-      }
+      // Get text Error 500 on the DOM
+      const message = await screen.getByText(/Erreur 500/)
 
-      // Delete space in text
-      errorMessageElt = errorMessageElt.replace(/\s+/g, '')
-      error500.message = error500.message.replace(/ /g, '')
-
-      // Check request status
-      expect(statusPage(customUrl)).toEqual(500)
-      expect(errorMessageElt).toEqual(error500.message)
+      // Condition for pass the test
+      expect(message).toBeTruthy()
     })
-  })
 
-  describe('When I try to access to an wrong url', () => {
-     test('Then we should return the error 404', () => {
+    test('Then fetches messages from an API and fails with 404 message error', async () => {
+      /* 
+      ---
+      Sumary : verify error 404 on an call api
+      We simulate a call api and return an error 404 in promise.
+      ---
+      */
+
       // Define message error 404
       let error404 = new Error("Erreur 404")
 
-      // Define error DOM page
+      // Define DOM page
       const errorElt = errorClass(error404.message)
       document.body.innerHTML = errorElt
 
-      // Get the specific error from the DOM
-      let errorMessageElt = screen.getByTestId('error-message').textContent
+      // Allow to navigate
+      const root = document.createElement("div")
+      root.setAttribute("id", "root")
+      document.body.appendChild(root)
+      router()
 
-      // Define or get url
-      const customUrl = 'http://localhost/test/wrongUrl.html'
+      // Make a get on api data list
+      MockedBills.bills.mockImplementationOnce(() => {
+        return {
+          list : () =>  {
+            return Promise.reject(new Error("Erreur 404"))
+          }
+        }
+      })
+      
+      window.onNavigate(ROUTES_PATH.Bills)
+      await new Promise(process.nextTick)
 
-      // Get status page
-      const statusPage = (customUrl) => {
-        let http = new XMLHttpRequest()
-        http.open('HEAD', customUrl, false)
-        http.send()
+      // Get text Error 404 on the DOM
+      const message = await screen.getByText(/Erreur 404/)
 
-        return http.status
-      }
-
-      // Delete space in text
-      errorMessageElt = errorMessageElt.replace(/\s+/g, '')
-      error404.message = error404.message.replace(/ /g, '')
-
-      // Check request status
-      expect(statusPage(customUrl)).toEqual(404)
-      expect(errorMessageElt).toEqual(error404.message)
+      // Condition for pass the test
+      expect(message).toBeTruthy()
     })
   })
 })

@@ -21,7 +21,7 @@ export default class NewBill {
 
   resetFile (file) {
     file.value = ''
-    console.log(file)
+    console.log(file.value)
   }
 
   handleChangeFile = e => {
@@ -57,9 +57,10 @@ export default class NewBill {
           this.fileName = fileName
         }).catch(error => console.error(error))
 
-        this.messageInfo = 'Type is correct'
+        // this.messageInfo = 'Type is correct'
     } else {
       // We reset the file input
+      console.log(fullFile.files)
       this.resetFile(fullFile)
       this.messageInfo = 'Error'
       console.log(this.messageInfo)
